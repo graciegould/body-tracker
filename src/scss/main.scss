@@ -1,0 +1,14 @@
+#app {
+    position: fixed;
+    background-color: aquamarine;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    top: 0;
+    left: 0;
+}
+.installation {
+    border: 2px solid black;
+    width: var(--screen-width);
+    height: var(--screen-height);
+}
