@@ -27,9 +27,21 @@ class BodyPose {
         this.config = { ...defaultConfig, ...config };
         this.video = document.createElement('video');
 
+        this.tuner = {
+            flipHorizontal: this.useWebcam ? true : false,
+            // maxDetections: 30,
+            // scoreThreshold: 0.8,
+            // nmsRadius: 10,
+        };
+        this.debug = true;
+        this.loaded = false;
         (async () => {
-            await this.load();
-            await this.init();
+              await this.load();
+              await this.init();
+            this.video.addEventListener('loadeddata', () => {
+                console.log('Video frames are coming through.');
+                this.loaded = true;
+            });
         })();
     }
 
@@ -53,12 +65,19 @@ class BodyPose {
         this.video.controls = this.config.controls;
         this.video.style.display = this.config.display ? 'block' : 'none';
         this.parent.appendChild(this.video);
+        this.debug = false;
+        if(!this.useWebcam) {
+            this.video.play();
+        }
     }
 
     async load() {
         try {
             console.log("Loading PoseNet model...");
-            this.net = await posenet.load();
+            this.net = await posenet.load({
+                architecture: 'ResNet50',
+                outputStride: 32
+              });
             console.log("PoseNet model loaded.");
         } catch (error) {
             throw new Error('Failed to load the PoseNet model: ' + error.message);
@@ -71,6 +90,25 @@ class BodyPose {
 
     showVideo() {
         this.video.style.display = 'block';
+    }
+
+    async detectMultiple() {
+        if(!this.loaded) return [];
+        const poses = await this.net.estimateMultiplePoses(this.video, this.tuner);
+        this.poses = poses;
+        return poses;
+    }
+
+    async detectSingle() {
+        const pose = await this.net.estimateSinglePose(this.video, {
+            flipHorizontal: this.tuner.flipHorizontal
+        });
+        this.pose = pose;
+        this.poseHistory[this.poseHistoryIndex] = pose;
+        this.poseHistoryIndex = (this.poseHistoryIndex + 1) % this.poseHistoryLength;
+        if(this.debug) {
+            console.log(this.pose);
+        }
     }
 }
 

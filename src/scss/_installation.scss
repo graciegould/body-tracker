@@ -1,0 +1,20 @@
+
+.installation {
+    border: 2px solid black;
+    width: var(--screen-width);
+    height: var(--screen-height);
+}
+
+
+#installation-canvas {
+    position: fixed;
+    background-color: pink;
+    display: flex;
+    top: 0;
+    left: 0;
+    opacity: 1;
+}
+
+video {
+    z-index: 1;
+}
